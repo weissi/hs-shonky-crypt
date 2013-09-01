@@ -52,8 +52,8 @@ prop_encryptDecryptMultiIsSymmetric :: ShonkyCryptKey -> [ByteString] -> Bool
 prop_encryptDecryptMultiIsSymmetric k plains =
     let encCtx = contextWithKey k
         decCtx = contextWithKey k
-        encs = evalState (mapM encodeM plains) encCtx
-        decs = evalState (mapM decodeM encs) decCtx
+        encs = evalState (mapM encryptM plains) encCtx
+        decs = evalState (mapM decryptM encs) decCtx
      in plains == decs
 
 prop_newCryptKeyWith :: Word8 -> Word8 -> Bool -> Bool

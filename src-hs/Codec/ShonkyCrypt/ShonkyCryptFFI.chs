@@ -39,14 +39,16 @@ instance Storable ShonkyCryptKey where
          {#set shonky_crypt_key_t.key_inc #} p (fromIntegral $ sckKeyInc x)
          {#set shonky_crypt_key_t.only_alnum #} p (fromBool $ sckOnlyAlnum x)
 
+{#pointer shonky_crypt_key_t as ShonkyCryptKeyPtr -> ShonkyCryptKey #}
+
 fromMallocedStorable :: Storable a => Ptr a -> IO a
 fromMallocedStorable p =
     do key <- peek p
        free p
        return key
 
-newPointerToRelease :: Ptr ShonkyCryptContext -> IO ShonkyCryptContext
-newPointerToRelease p =
+newShonkyCryptContextPointer :: Ptr ShonkyCryptContext -> IO ShonkyCryptContext
+newShonkyCryptContextPointer p =
     do fp <- newForeignPtr scReleaseContextPtr p
        return $ ShonkyCryptContext fp
 
@@ -61,14 +63,12 @@ withShonkyCryptContext :: ShonkyCryptContext -> (Ptr ShonkyCryptContext -> IO b)
 foreign import ccall "shonky-crypt.h &sc_release_context"
   scReleaseContextPtr :: FunPtr (Ptr ShonkyCryptContext -> IO ())
 
-{#pointer shonky_crypt_key_t as ShonkyCryptKeyPtr -> ShonkyCryptKey #}
-
 withTrickC2HS :: Storable a => a -> (Ptr a -> IO b) -> IO b
 withTrickC2HS = with
 
 {#fun pure unsafe sc_alloc_context_with_key as
     ^ { withTrickC2HS* `ShonkyCryptKey' }
-    -> `ShonkyCryptContext' newPointerToRelease* #}
+    -> `ShonkyCryptContext' newShonkyCryptContextPointer* #}
 
 withByteStringLen :: ByteString -> ((CString, CULong) -> IO a) -> IO a
 withByteStringLen str f = BSU.unsafeUseAsCStringLen str (\(cstr, len) ->
@@ -79,7 +79,7 @@ withByteStringLen str f = BSU.unsafeUseAsCStringLen str (\(cstr, len) ->
 
 {#fun pure unsafe sc_copy_context as
     ^ { withShonkyCryptContext* `ShonkyCryptContext' }
-    -> `ShonkyCryptContext' newPointerToRelease* #}
+    -> `ShonkyCryptContext' newShonkyCryptContextPointer* #}
 
 type InPlaceEnDeCryptFun =
      Ptr ShonkyCryptContext -> Ptr CChar -> Ptr CChar -> CULong -> IO ()

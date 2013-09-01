@@ -7,7 +7,7 @@ module Codec.ShonkyCrypt
     , encryptS, decryptS
     , contextWithKey
     , caesar, decaesar
-    , encodeM, decodeM
+    , encryptM, decryptM
     , encryptConduit, decryptConduit
     ) where
 
@@ -52,11 +52,11 @@ encDecM f input =
        put ctx'
        return output
 
-encodeM :: MonadState ShonkyCryptContext m => ByteString -> m ByteString
-encodeM = encDecM encryptS
+encryptM :: MonadState ShonkyCryptContext m => ByteString -> m ByteString
+encryptM = encDecM encryptS
 
-decodeM :: MonadState ShonkyCryptContext m => ByteString -> m ByteString
-decodeM = encDecM decryptS
+decryptM :: MonadState ShonkyCryptContext m => ByteString -> m ByteString
+decryptM = encDecM decryptS
 
 encDecConduit :: Monad m
               => (ShonkyCryptContext -> a -> (b, ShonkyCryptContext))
