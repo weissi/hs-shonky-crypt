@@ -91,15 +91,16 @@ scEnDeCryptInplace :: InPlaceEnDeCryptFun
                    -> ByteString
                    -> (ByteString, ShonkyCryptContext)
 scEnDeCryptInplace f ctx input =
-    let !newContext = scCopyContext ctx
-     in unsafePerformIO $
-        BSU.unsafeUseAsCStringLen input $ \(inputBytes, inputLen) ->
-        withShonkyCryptContext newContext $ \newContext' ->
-        do
-           outBuffer <- mallocBytes inputLen
-           f newContext' inputBytes outBuffer (fromIntegral inputLen)
-           out <- unsafePackMallocCStringLen (outBuffer, inputLen)
-           return (out, newContext)
+     unsafePerformIO $
+     BSU.unsafeUseAsCStringLen input $ \(inputBytes, inputLen) ->
+     withShonkyCryptContext ctx $ \ctx' ->
+     do
+        newContext' <- {#call sc_copy_context #} ctx'
+        outBuffer <- mallocBytes inputLen
+        f newContext' inputBytes outBuffer (fromIntegral inputLen)
+        out <- unsafePackMallocCStringLen (outBuffer, inputLen)
+        newContext <- newShonkyCryptContextPointer newContext'
+        return (out, newContext)
 
 encryptS :: ShonkyCryptContext -> ByteString -> (ByteString, ShonkyCryptContext)
 encryptS = scEnDeCryptInplace {#call unsafe sc_encrypt_inplace #}
