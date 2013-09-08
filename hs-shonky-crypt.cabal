@@ -22,7 +22,11 @@ library
                        bytestring >= 0.10,
                        text >= 0.11,
                        mtl >= 2.1.2,
-                       conduit >= 1.0
+                       conduit >= 1.0,
+                       -- Test-only dependencies
+                       HTF >= 0.9,
+                       transformers >= 0.3,
+                       quickcheck-instances >= 0.3
   build-tools:         c2hs -any
   ghc-options:         -Wall
   ghc-options:         -rtsopts
