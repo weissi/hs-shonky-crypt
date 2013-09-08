@@ -9,7 +9,7 @@ import Control.Monad (liftM)
 import Data.ByteString (ByteString)
 import Data.Word (Word8)
 import Foreign.C.String (CStringLen, CString)
-import Foreign.C.Types (CChar(..), CULong(..), CDouble(..))
+import Foreign.C.Types (CChar(..), CULong(..), CUInt(..), CDouble(..))
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc (mallocBytes, free)
 import Foreign.Marshal.Utils (with, fromBool, toBool)
@@ -20,6 +20,8 @@ import qualified Data.ByteString.Internal as BSI
 import qualified Data.ByteString.Unsafe as BSU
 
 #include "shonky-crypt.h"
+
+type CSizeT = {# type size_t #}
 
 data ShonkyCryptKey = ShonkyCryptKey
     { sckKeyStart :: !Word8
@@ -70,7 +72,7 @@ withTrickC2HS = with
     ^ { withTrickC2HS *`ShonkyCryptKey' }
     -> `ShonkyCryptContext' newShonkyCryptContextPointer * #}
 
-withByteStringLen :: ByteString -> ((CString, CULong) -> IO a) -> IO a
+withByteStringLen :: ByteString -> ((CString, CSizeT) -> IO a) -> IO a
 withByteStringLen str f = BSU.unsafeUseAsCStringLen str (\(cstr, len) ->
     f (cstr, fromIntegral len))
 
@@ -82,9 +84,9 @@ withByteStringLen str f = BSU.unsafeUseAsCStringLen str (\(cstr, len) ->
     -> `ShonkyCryptContext' newShonkyCryptContextPointer * #}
 
 type InPlaceEnDeCryptFun =
-     Ptr ShonkyCryptContext -> Ptr CChar -> Ptr CChar -> CULong -> IO ()
+     Ptr ShonkyCryptContext -> Ptr CChar -> Ptr CChar -> CSizeT -> IO ()
 type NewEnDeCryptFun =
-     Ptr ShonkyCryptKey -> Ptr CChar -> CULong -> IO CString
+     Ptr ShonkyCryptKey -> Ptr CChar -> CSizeT -> IO CString
 
 scEnDeCryptInplace :: InPlaceEnDeCryptFun
                    -> ShonkyCryptContext
