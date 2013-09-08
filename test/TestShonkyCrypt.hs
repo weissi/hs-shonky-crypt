@@ -106,12 +106,30 @@ test_incNeq1WorksForNonAlnum =
 
 test_inplaceEncryption :: IO ()
 test_inplaceEncryption =
-    do let key = ShonkyCryptKey { sckKeyStart=1, sckKeyInc=4, sckOnlyAlnum=False }
+    do let key = ShonkyCryptKey { sckKeyStart=1
+                                , sckKeyInc=4
+                                , sckOnlyAlnum=False
+                                }
            ctx = contextWithKey key
            (enc', ctx') = encryptS ctx $ TE.encodeUtf8 "A"
            (enc'', ctx'') = encryptS ctx' $ TE.encodeUtf8 "A"
            expected = TE.encodeUtf8 "BF"
            actual = BS.concat [enc', enc'']
+       assertEqual expected actual
+
+test_contextNotMutated :: IO ()
+test_contextNotMutated =
+    do let key = ShonkyCryptKey { sckKeyStart=1
+                                , sckKeyInc=4
+                                , sckOnlyAlnum=False
+                                }
+           ctx = contextWithKey key
+           (enc1, _) = encryptS ctx $ TE.encodeUtf8 "A"
+           (enc2, _) = encryptS ctx $ TE.encodeUtf8 "A"
+           (enc3, _) = encryptS ctx $ TE.encodeUtf8 "A"
+           (enc4, _) = encryptS ctx $ TE.encodeUtf8 "A"
+           expected = replicate 4 (TE.encodeUtf8 "B")
+           actual = [enc1, enc2, enc3, enc4]
        assertEqual expected actual
 
 test_conduit :: IO ()
