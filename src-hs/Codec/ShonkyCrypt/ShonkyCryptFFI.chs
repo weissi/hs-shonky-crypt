@@ -50,7 +50,7 @@ fromMallocedStorable p =
 newShonkyCryptContextPointer :: Ptr ShonkyCryptContext -> IO ShonkyCryptContext
 newShonkyCryptContextPointer p =
     do fp <- newForeignPtr scReleaseContextPtr p
-       return $ ShonkyCryptContext fp
+       return $! ShonkyCryptContext fp
 
 unsafePackMallocCStringLen :: CStringLen -> IO ByteString
 unsafePackMallocCStringLen (cstr, len) = do
@@ -67,8 +67,8 @@ withTrickC2HS :: Storable a => a -> (Ptr a -> IO b) -> IO b
 withTrickC2HS = with
 
 {#fun pure unsafe sc_alloc_context_with_key as
-    ^ { withTrickC2HS* `ShonkyCryptKey' }
-    -> `ShonkyCryptContext' newShonkyCryptContextPointer* #}
+    ^ { withTrickC2HS *`ShonkyCryptKey' }
+    -> `ShonkyCryptContext' newShonkyCryptContextPointer * #}
 
 withByteStringLen :: ByteString -> ((CString, CULong) -> IO a) -> IO a
 withByteStringLen str f = BSU.unsafeUseAsCStringLen str (\(cstr, len) ->
@@ -78,8 +78,8 @@ withByteStringLen str f = BSU.unsafeUseAsCStringLen str (\(cstr, len) ->
     ^ { withByteStringLen *`ByteString'& } -> `Double' #}
 
 {#fun pure unsafe sc_copy_context as
-    ^ { withShonkyCryptContext* `ShonkyCryptContext' }
-    -> `ShonkyCryptContext' newShonkyCryptContextPointer* #}
+    ^ { withShonkyCryptContext *`ShonkyCryptContext' }
+    -> `ShonkyCryptContext' newShonkyCryptContextPointer * #}
 
 type InPlaceEnDeCryptFun =
      Ptr ShonkyCryptContext -> Ptr CChar -> Ptr CChar -> CULong -> IO ()
@@ -122,4 +122,4 @@ decrypt :: ShonkyCryptKey -> ByteString -> ByteString
 decrypt = scEnDecryptNew {#call unsafe sc_decrypt_new #}
 
 {#fun pure unsafe sc_new_crypt_key_with as
-    ^ { `Word8', `Word8', `Bool' } -> `ShonkyCryptKey' fromMallocedStorable* #}
+    ^ { `Word8', `Word8', `Bool' } -> `ShonkyCryptKey' fromMallocedStorable * #}
