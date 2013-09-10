@@ -97,7 +97,7 @@ scEnDeCryptInplace f ctx input =
      BSU.unsafeUseAsCStringLen input $ \(inputBytes, inputLen) ->
      withShonkyCryptContext ctx $ \ctx' ->
      do
-        newContext' <- {#call sc_copy_context #} ctx'
+        newContext' <- {#call unsafe sc_copy_context #} ctx'
         outBuffer <- mallocBytes inputLen
         f newContext' inputBytes outBuffer (fromIntegral inputLen)
         out <- unsafePackMallocCStringLen (outBuffer, inputLen)
